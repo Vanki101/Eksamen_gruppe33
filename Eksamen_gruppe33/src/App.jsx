@@ -5,7 +5,6 @@ import "./App.css"
 import Navbar from "./components/navbar"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Home from "./components/home"
-import Dashboard from "./components/dashboard"
 import "./styles/home.css"
 
 function App() {
