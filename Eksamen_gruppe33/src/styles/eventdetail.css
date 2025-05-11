@@ -1,0 +1,153 @@
+/* Container & General */
+.event-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.event-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.section-heading {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Genre Section */
+.genre-section {
+  margin-bottom: 1.5rem;
+}
+
+.genre-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.genre-badge {
+  background-color: #eee;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+/* Social */
+.social-text {
+  font-weight: bold;
+  color: black;
+  margin-bottom: 2rem;
+  font-size: 20px;
+}
+
+/* Ticket Section */
+.ticket-section {
+  margin-bottom: 2rem;
+}
+
+.ticket-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #fafafa;
+  max-width: 300px;
+}
+
+.ticket-image {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-bottom: 0.8rem;
+}
+
+.ticket-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.ticket-info {
+  font-size: 0.95rem;
+  margin: 0.2rem 0;
+}
+
+.button-group {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.buy-btn,
+.wishlist-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.buy-btn {
+  background-color: black;
+  color: white;
+}
+
+.ticketmaster-link {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #0066cc;
+  text-decoration: underline;
+}
+
+/* Artist Section */
+.artist-section {
+  margin-top: 3rem;
+}
+
+/* Fix artist section layout */
+.artist-grid {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+/* Restrict card width */
+.artist-card {
+  width: 300px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  text-align: center;
+}
+
+.artist-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Maintain image aspect ratio */
+.artist-image {
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  background-color: #f0f0f0;
+}
+
+.artist-name {
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 1rem;
+  margin: 0;
+  background-color: #fafafa;
+}
