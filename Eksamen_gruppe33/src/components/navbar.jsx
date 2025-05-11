@@ -1,3 +1,9 @@
+// Navbar-komponenten: Ansvarlig for navigasjonsfeltet øverst på siden.
+// Viser logo, dynamiske lenker til kategorier, og en login/my account-lenke basert på innloggingsstatus.
+// Har en state for å åpne/lukke menyen (for mobilvennlighet).
+// Props: isLoggedIn og setIsLoggedIn for å kunne tilpasse login-knappen.
+// Enkel toggling av menyen med hamburger-ikon.
+
 import React, { useState, useEffect } from "react"
 
 export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
