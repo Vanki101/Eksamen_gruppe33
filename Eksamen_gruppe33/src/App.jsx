@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react"
 import reactLogo from "./assets/react.svg"
-import viteLogo from "/vite.svg"
 import "./App.css"
 import Navbar from "./components/navbar"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Home from "./components/home"
+import Dashboard from "./components/dashbord"
+import EventDetail from "./components/event/[id]"
+import SanityEventDetail from "./components/sanity-event/[id]"
+import CategoryDetail from "./components/category/slug"
 import "./styles/home.css"
+import "./styles/dashboard.css"
+import "./styles/eventdetail.css"
+import "./styles/cityeventsection.css"
+import "./styles/category.css"
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react"
 import sanityClient from "../../sanityclient"
-import React, { useState, useEffect } from "react"
-import sanityClient from "../../sanityclient"
 import EventCard from "./eventcard"
+
+
 const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
-  // const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [userData, setUserData] = useState(null)
@@ -12,6 +11,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
   const [purchasedEvents, setPurchasedEvents] = useState([])
   const [friends, setFriends] = useState([])
   const [friendCommonEvents, setFriendCommonEvents] = useState([])
+  const [featuredEvents, setFeaturedEvents] = useState([])
 
   const API_KEY = import.meta.env.VITE_TM_API_KEY
 
@@ -23,10 +23,12 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       setUserData(parsedUser)
       fetchEventDetails(parsedUser)
       fetchFriends(parsedUser)
+      fetchFeaturedEvents()
     }
   }, [])
 
   const fetchEventDetails = async (user) => {
+    console.log(user)
     try {
       const wishlistResponses = []
       for (const id of user.wishlist?.filter(Boolean) || []) {
@@ -59,7 +61,6 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
   }
 
   const fetchFriends = async (user) => {
-    console.log(user.friends)
     try {
       const friendsData = await sanityClient.fetch(
         `*[_type == "user" && _id in $friendIds]`,
@@ -68,38 +69,77 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       setFriends(friendsData)
 
       const commonList = []
+
       for (const friend of friendsData) {
-        const common =
+        const commonEventIds =
           friend.wishlist?.filter((id) => user.wishlist?.includes(id)) || []
-        if (common.length > 0) {
-          const firstCommonEventId = common[0]
-          const res = await fetch(
-            `https://app.ticketmaster.com/discovery/v2/events/${firstCommonEventId}.json?apikey=${API_KEY}`
-          )
-          const event = await res.json()
-          commonList.push({
-            friendName: friend.name,
-            eventName: event.name,
-          })
+
+        for (const id of commonEventIds) {
+          try {
+            const res = await fetch(
+              `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}`
+            )
+            if (!res.ok) continue
+            const data = await res.json()
+
+            // Push each common event individually
+            commonList.push({
+              friendName: friend.name,
+              eventName: data.name,
+            })
+          } catch (err) {
+            console.warn(
+              `Error fetching event ${id} for friend ${friend.name}:`,
+              err
+            )
+          }
         }
       }
+
       setFriendCommonEvents(commonList)
     } catch (err) {
       console.error("Error fetching friends:", err)
     }
   }
 
+  const fetchFeaturedEvents = async () => {
+    try {
+      const events = await sanityClient.fetch(`*[_type == "event"]{apiId}`)
+      const responses = []
+
+      for (const { apiId } of events) {
+        try {
+          const res = await fetch(
+            `https://app.ticketmaster.com/discovery/v2/events/${apiId}.json?apikey=${API_KEY}`
+          )
+          if (!res.ok) continue
+          const data = await res.json()
+          responses.push(data)
+        } catch (err) {
+          console.warn(`Error fetching featured event ${apiId}:`, err)
+        }
+      }
+
+      setFeaturedEvents(responses)
+    } catch (error) {
+      console.error("Error fetching featured events:", error)
+    }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
-      const query = `*[_type == "user" && name == $name][0]`
-      const user = await sanityClient.fetch(query, { name: email })
+      const user = await sanityClient.fetch(
+        `*[_type == "user" && name == $name][0]`,
+        { name: email }
+      )
       if (user) {
         localStorage.setItem("user", JSON.stringify(user))
         setUserData(user)
         setIsLoggedIn(true)
         fetchEventDetails(user)
         fetchFriends(user)
+        fetchFeaturedEvents()
       } else {
         alert("User not found")
       }
@@ -149,54 +189,67 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
     )
   }
 
-  console.log(friends)
-
   return (
-    <main className="dashboard">
-      <section className="user-info">
-        <h2>User Information</h2>
-        <p>
-          <strong>Name:</strong> {userData?.name}
-        </p>
-        <p>
-          <strong>Age:</strong> {userData?.age}
-        </p>
-        <p>
-          <strong>Gender:</strong> {userData?.gender}
-        </p>
-        <button onClick={handleLogout}>Logout</button>
-      </section>
+    <main className="dashboard-container">
+      <div className="top-cards">
+        <section className="user-card">
+          <div className="avatar">{userData?.name?.[0]}</div>
+          <h2>{userData?.name}</h2>
+          <p>{userData?.dob || "1993-09-19"}</p>
+          <p>{userData?.gender || "Female"}</p>
+          <button className="logout-button" onClick={handleLogout}>
+            Logout
+          </button>
+        </section>
 
-      <section className="user-friends">
-        <h2>Friends</h2>
-        {friends.map((friend) => (
-          <div key={friend._id}>
-            <p>
-              <strong>{friend.name}</strong>
-            </p>
-          </div>
-        ))}
-        {friendCommonEvents.map((match, index) => (
-          <p key={index}>
-            You and <strong>{match.friendName}</strong> have the same event in
-            your wishlist – how about going together to{" "}
-            <strong>{match.eventName}</strong>?
-          </p>
-        ))}
-      </section>
+        <section className="friends-card">
+          <h3>Friends</h3>
+          {friendCommonEvents.map((match, index) => (
+            <div className="friend-card" key={index}>
+              <div className="friend-avatar">{match.friendName?.[0]}</div>
+              <div className="friend-info">
+                <p className="friend-name">{match.friendName}</p>
+                <p>
+                  You and <strong>{match.friendName}</strong> both want to go to{" "}
+                  <strong>{match.eventName}</strong>. How about going together?
+                </p>
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
 
       <section className="user-content">
         <h2>Wishlist</h2>
         <div className="card-grid">
-          {wishlistEvents.map((event) => (
-            <EventCard key={event.id} event={event} sanityevent={true} />
+          {wishlistEvents.map((event, index) => (
+            <EventCard
+              key={`${event.id}-${index}`}
+              event={event}
+              sanityevent={true}
+            />
           ))}
         </div>
 
         <h2>Previous Purchases</h2>
         <div className="card-grid">
-          {purchasedEvents.map((event) => (
-            <EventCard key={event.id} event={event} sanityevent={true} />
+          {purchasedEvents.map((event, index) => (
+            <EventCard
+              key={`${event.id}-${index}`}
+              event={event}
+              sanityevent={true}
+            />
+          ))}
+        </div>
+
+        <h2>Featured Events</h2>
+        <div className="card-grid">
+          {featuredEvents.map((event, index) => (
+            <EventCard
+              key={`${event.id}-${index}`}
+              event={event}
+              sanityevent={true}
+            />
           ))}
         </div>
       </section>

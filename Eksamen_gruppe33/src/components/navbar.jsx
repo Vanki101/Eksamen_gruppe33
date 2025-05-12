@@ -4,7 +4,7 @@
 // Props: isLoggedIn og setIsLoggedIn for å kunne tilpasse login-knappen.
 // Enkel toggling av menyen med hamburger-ikon.
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect} from "react"
 
 export default function Navbar({ isLoggedIn, setIsLoggedIn }) {
   const [menuOpen, setMenuOpen] = useState(false)

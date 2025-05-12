@@ -1,6 +1,8 @@
+import sanityClient from "@sanity/client"
+
 export default sanityClient({
   projectId: "pkxoe8e3",
-  dataset: "production",
+  dataset: "eksamen2025",
   useCdn: false,
   apiVersion: "2023-01-01",
   token:
