@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react"
 import sanityClient from "../../sanityclient"
 import EventCard from "./eventcard"
 
-
 const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -12,6 +11,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
   const [friends, setFriends] = useState([])
   const [friendCommonEvents, setFriendCommonEvents] = useState([])
   const [featuredEvents, setFeaturedEvents] = useState([])
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
   const API_KEY = import.meta.env.VITE_TM_API_KEY
 
@@ -34,11 +34,12 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       for (const id of user.wishlist?.filter(Boolean) || []) {
         try {
           const res = await fetch(
-            `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}`
+            `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}&local=*`
           )
           if (!res.ok) continue
           const data = await res.json()
           wishlistResponses.push(data)
+          await sleep(450)
         } catch {}
       }
       setWishlistEvents(wishlistResponses)
@@ -47,7 +48,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       for (const id of user.previousPurchases?.filter(Boolean) || []) {
         try {
           const res = await fetch(
-            `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}`
+            `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}&local=*`
           )
           if (!res.ok) continue
           const data = await res.json()
@@ -77,7 +78,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
         for (const id of commonEventIds) {
           try {
             const res = await fetch(
-              `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}`
+              `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${API_KEY}&local=*`
             )
             if (!res.ok) continue
             const data = await res.json()
@@ -110,11 +111,12 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       for (const { apiId } of events) {
         try {
           const res = await fetch(
-            `https://app.ticketmaster.com/discovery/v2/events/${apiId}.json?apikey=${API_KEY}`
+            `https://app.ticketmaster.com/discovery/v2/events/${apiId}.json?apikey=${API_KEY}&local=*`
           )
           if (!res.ok) continue
           const data = await res.json()
           responses.push(data)
+          await sleep(1000)
         } catch (err) {
           console.warn(`Error fetching featured event ${apiId}:`, err)
         }

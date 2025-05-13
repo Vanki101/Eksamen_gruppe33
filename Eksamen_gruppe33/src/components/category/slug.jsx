@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import client from "../../../sanityclient"
 
@@ -22,7 +22,7 @@ export default function CategoryDetail() {
       try {
         const query = search || slug || "music"
         const response = await fetch(
-          `https://app.ticketmaster.com/discovery/v2/suggest?apikey=${API_KEY}&keyword=${query}`
+          `https://app.ticketmaster.com/discovery/v2/suggest?apikey=${API_KEY}&keyword=${query}&locale=*`
         )
         const data = await response.json()
         setAttractions(data._embedded?.attractions || [])
@@ -66,7 +66,7 @@ export default function CategoryDetail() {
     const { date, country, city } = filters
     let queryParams = []
 
-    if (slug) queryParams.push(`keyword=${slug}`)
+    if (slug) queryParams.push(`classificationName=${slug}`)
     if (country) queryParams.push(`countryCode=${country}`)
     if (city) queryParams.push(`city=${city}`)
     if (date) queryParams.push(`startDateTime=${new Date(date).toISOString()}`)
@@ -76,19 +76,19 @@ export default function CategoryDetail() {
 
     try {
       const eventsRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${API_KEY}&${query}`
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${API_KEY}&${query}&locale=*`
       )
       const eventsData = await eventsRes.json()
       setEvents(eventsData._embedded?.events || [])
 
       const venuesRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${API_KEY}&${query}`
+        `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${API_KEY}&${query}&locale=*`
       )
       const venuesData = await venuesRes.json()
       setVenues(venuesData._embedded?.venues || [])
 
       const attractionsRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${API_KEY}&${query}`
+        `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${API_KEY}&${query}&locale=*`
       )
       const attractionsData = await attractionsRes.json()
       setAttractions(attractionsData._embedded?.attractions || [])

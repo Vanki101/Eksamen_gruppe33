@@ -16,7 +16,7 @@ export default function CityEventsSection() {
     const fetchCityEvents = async () => {
       try {
         const response = await fetch(
-          `https://app.ticketmaster.com/discovery/v2/events.json?city=${city}&size=10&apikey=${API_KEY}`
+          `https://app.ticketmaster.com/discovery/v2/events.json?city=${city}&size=10&apikey=${API_KEY}&locale=*`
         )
         const data = await response.json()
         const cityEvents = data._embedded?.events || []

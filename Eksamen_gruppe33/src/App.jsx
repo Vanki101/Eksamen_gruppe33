@@ -42,6 +42,7 @@ function App() {
           <Route path="/category/:slug" element={<CategoryDetail />} />
         </Routes>
       </Router>
+      <a href="https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/">Attribution link </a>
     </>
   )
 }
