@@ -4,7 +4,7 @@
 // Nederst vises CityEventsSection for å utforske flere byer. 
 // Bruker miljøvariabel for API-nøkkel og har støtte for å utvide festival-søk med flere navn.
 
-import Eact, {useEffect, useState } from "react"
+import React, {useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import EventCard from "./eventcard"
 import CityEventsSection from "./cityeventsection"
