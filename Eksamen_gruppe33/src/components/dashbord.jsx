@@ -1,8 +1,13 @@
+// Importerer nødvendige hooks og komponenter fra React
 import React, { useState, useEffect } from "react"
+// Importerer Sanity-klienten for å hente data fra backend
 import sanityClient from "../../sanityclient"
+// Importerer EventCard-komponenten for å vise arrangementer
 import EventCard from "./eventcard"
 
+// Dashboard-komponenten viser brukerens profil, ønskeliste, kjøpte billetter, venner og utvalgte arrangementer
 const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
+  // State for innlogging, brukerdata og diverse lister
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [userData, setUserData] = useState(null)
@@ -11,11 +16,16 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
   const [friends, setFriends] = useState([])
   const [friendCommonEvents, setFriendCommonEvents] = useState([])
   const [featuredEvents, setFeaturedEvents] = useState([])
+
+  // Hjelpefunksjon for å pause mellom API-kall (for å unngå rate limits)
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
+  // Henter Ticketmaster API-nøkkel fra miljøvariabler
   const API_KEY = import.meta.env.VITE_TM_API_KEY
 
+  // useEffect kjører når komponenten monteres
   useEffect(() => {
+    // Sjekker om bruker allerede er logget inn (lagret i localStorage)
     const user = localStorage.getItem("user")
     if (user) {
       const parsedUser = JSON.parse(user)
@@ -27,10 +37,12 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
     }
   }, [])
 
+  // Henter detaljer om events fra ønskelisten og tidligere kjøp
   const fetchEventDetails = async (user) => {
     console.log(user)
     try {
       const wishlistResponses = []
+      // Går gjennom alle event-IDer i ønskelisten og henter detaljer fra Ticketmaster
       for (const id of user.wishlist?.filter(Boolean) || []) {
         try {
           const res = await fetch(
@@ -39,12 +51,13 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
           if (!res.ok) continue
           const data = await res.json()
           wishlistResponses.push(data)
-          await sleep(450)
+          await sleep(450) // Pause for å unngå å spamme API-et
         } catch {}
       }
       setWishlistEvents(wishlistResponses)
 
       const purchaseResponses = []
+      // Går gjennom alle event-IDer i tidligere kjøp og henter detaljer
       for (const id of user.previousPurchases?.filter(Boolean) || []) {
         try {
           const res = await fetch(
@@ -57,12 +70,15 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       }
       setPurchasedEvents(purchaseResponses)
     } catch (error) {
+      // Logger feil hvis noe går galt med henting av eventdetaljer
       console.error("Error fetching event details:", error)
     }
   }
 
+  // Henter vennedata fra Sanity og finner felles ønskeliste-events
   const fetchFriends = async (user) => {
     try {
+      // Henter alle venner fra Sanity basert på referanser
       const friendsData = await sanityClient.fetch(
         `*[_type == "user" && _id in $friendIds]`,
         { friendIds: user.friends?.map((f) => f._ref) || [] }
@@ -71,6 +87,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
 
       const commonList = []
 
+      // For hver venn, sjekker hvilke events i ønskelisten som er felles
       for (const friend of friendsData) {
         const commonEventIds =
           friend.wishlist?.filter((id) => user.wishlist?.includes(id)) || []
@@ -82,13 +99,13 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
             )
             if (!res.ok) continue
             const data = await res.json()
-
-            // Push each common event individually
+            // Lagrer navn på venn og event for å vise forslag om å gå sammen
             commonList.push({
               friendName: friend.name,
               eventName: data.name,
             })
           } catch (err) {
+            // Logger advarsel hvis det oppstår feil for en spesifikk venn/event
             console.warn(
               `Error fetching event ${id} for friend ${friend.name}:`,
               err
@@ -99,12 +116,15 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
 
       setFriendCommonEvents(commonList)
     } catch (err) {
+      // Logger feil hvis henting av venner feiler
       console.error("Error fetching friends:", err)
     }
   }
 
+  // Henter utvalgte events fra Sanity og deres detaljer fra Ticketmaster
   const fetchFeaturedEvents = async () => {
     try {
+      // Henter alle events fra Sanity som har en apiId
       const events = await sanityClient.fetch(`*[_type == "event"]{apiId}`)
       const responses = []
 
@@ -116,26 +136,31 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
           if (!res.ok) continue
           const data = await res.json()
           responses.push(data)
-          await sleep(1000)
+          await sleep(1000) // Pause mellom kall for å unngå rate limits
         } catch (err) {
+          // Logger advarsel hvis det oppstår feil for et spesifikt event
           console.warn(`Error fetching featured event ${apiId}:`, err)
         }
       }
 
       setFeaturedEvents(responses)
     } catch (error) {
+      // Logger feil hvis henting av utvalgte events feiler
       console.error("Error fetching featured events:", error)
     }
   }
 
+  // Håndterer innlogging av bruker
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
+      // Henter bruker fra Sanity basert på brukernavn (her brukes e-post som navn)
       const user = await sanityClient.fetch(
         `*[_type == "user" && name == $name][0]`,
         { name: email }
       )
       if (user) {
+        // Lagrer bruker i localStorage og oppdaterer state
         localStorage.setItem("user", JSON.stringify(user))
         setUserData(user)
         setIsLoggedIn(true)
@@ -146,16 +171,19 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
         alert("User not found")
       }
     } catch (err) {
+      // Logger feil hvis innlogging feiler
       console.error("Login error:", err)
     }
   }
 
+  // Håndterer utlogging av bruker
   const handleLogout = () => {
     localStorage.removeItem("user")
     setIsLoggedIn(false)
     setUserData(null)
   }
 
+  // Viser innloggingsskjema hvis bruker ikke er logget inn
   if (!isLoggedIn) {
     return (
       <main className="login-container">
@@ -191,6 +219,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
     )
   }
 
+  // Hvis bruker er logget inn, vis dashboard med brukerdata, venner og events
   return (
     <main className="dashboard-container">
       <div className="top-cards">
@@ -206,6 +235,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
 
         <section className="friends-card">
           <h3>Friends</h3>
+          {/* Viser felles events mellom bruker og venner */}
           {friendCommonEvents.map((match, index) => (
             <div className="friend-card" key={index}>
               <div className="friend-avatar">{match.friendName?.[0]}</div>
@@ -224,6 +254,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
       <section className="user-content">
         <h2>Wishlist</h2>
         <div className="card-grid">
+          {/* Viser alle events i ønskelisten */}
           {wishlistEvents.map((event, index) => (
             <EventCard
               key={`${event.id}-${index}`}
@@ -235,6 +266,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
 
         <h2>Previous Purchases</h2>
         <div className="card-grid">
+          {/* Viser alle tidligere kjøpte events */}
           {purchasedEvents.map((event, index) => (
             <EventCard
               key={`${event.id}-${index}`}
@@ -246,6 +278,7 @@ const Dashboard = ({ isLoggedIn, setIsLoggedIn }) => {
 
         <h2>Featured Events</h2>
         <div className="card-grid">
+          {/* Viser utvalgte events fra Sanity */}
           {featuredEvents.map((event, index) => (
             <EventCard
               key={`${event.id}-${index}`}
